@@ -17,6 +17,7 @@
  */
 
 define("SETTINGS_FILE", getenv("HOME") . "/.drupalmonrc");
+define("API_URL", "https://app.lumturio.com/api/");
 require_once('vendor/autoload.php');
 
 
@@ -38,36 +39,67 @@ class DrupalMon
 
     public function init()
     {
-        if(!file_exists(realpath(SETTINGS_FILE)))
+        if (!file_exists(realpath(SETTINGS_FILE)))
             $this->error("No settings file found; Please create " . SETTINGS_FILE . " first");
 
         $this->settings = parse_ini_file(SETTINGS_FILE, false);
 
-        if(!isset($this->settings['key']))
-            $this->error("No valid API key found in " . SETTINGS_FILE);
+        if (!isset($this->settings['token']))
+            $this->error("No valid API token found in " . SETTINGS_FILE);
     }
 
     public function run()
     {
-        $options  = ['status', 'engine', 'list'];
-        $input    = $this->cli->radio('Get the following report:', $options);
+        $options = ['overview', 'detail'];
+        $input = $this->cli->radio('Select your report:', $options);
         $response = $input->prompt();
 
-        if($response !== NULL) {
+        if ($response !== NULL) {
             $this->getReport($response);
             $this->run();
         }
     }
 
-    public function getReport($report) {
-        switch($report) {
-            case "status":
+    public function getReport($report)
+    {
+        $sites = $this->getSites();
+        switch ($report) {
+            case "overview":
+                $table = [];
+                $table[] = ["Engine", "Site URL", "Updates", "Security", "Status"];
+                foreach ($sites as $site) {
+                    $table[] = [$site->engine_version, $site->site_url, $site->update_counter, $site->security_update_counter, $site->status_message];
+                }
                 break;
-            case "engine":
-                break;
-            case "list":
+            case "detail":
+                $sites_arr = [];
+                foreach ($sites as $site) {
+                    $sites_arr[] = $site->site_url;
+                }
+                $input = $this->cli->radio('Select your site:', $sites_arr);
+                $response = $input->prompt();
                 break;
         }
+
+        $this->cli->table($table);
+    }
+
+    private function getSites()
+    {
+        $res = $this->callApi("site.getsites");
+        return $res->items;
+    }
+
+    private function callApi($path)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, API_URL . $path);
+        curl_setopt($ch, CURLOPT_VERBOSE, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); // don't do this ! You should change this to 2
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // don't do this ! You should change this to 2
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-TOKEN: ' . $this->settings['token']));
+        return json_decode(curl_exec($ch), false);
     }
 
     public function error($message)
