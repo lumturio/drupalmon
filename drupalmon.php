@@ -42,6 +42,8 @@ class DrupalMon
             $this->error("No settings file found; Please create " . SETTINGS_FILE . " first");
 
         $this->settings = parse_ini_file(SETTINGS_FILE, true);
+
+        var_dump($this->settings);
     }
 
     public function run()
