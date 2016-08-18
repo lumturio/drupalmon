@@ -46,6 +46,8 @@ class DrupalMon
 
         if (!isset($this->settings['token']))
             $this->error("No valid API token found in " . SETTINGS_FILE);
+
+        $this->cli->clear();
     }
 
     public function run()
@@ -62,7 +64,10 @@ class DrupalMon
 
     public function getReport($report)
     {
+        $this->cli->clear();
+
         $sites = $this->getSites();
+
         switch ($report) {
             case "overview":
                 $table = [];
@@ -79,6 +84,7 @@ class DrupalMon
                 }
                 $site_selector = $this->cli->radio('Select your site:', $sites_arr);
                 $site_id = $site_selector->prompt();
+                $this->cli->clear();
 
                 $site = $this->getSingleSite($sites, $site_id);
 
@@ -104,9 +110,10 @@ class DrupalMon
 
     }
 
-    private function getSingleSite($sites, $site_id) {
-        foreach($sites as $site) {
-            if($site->id == $site_id)
+    private function getSingleSite($sites, $site_id)
+    {
+        foreach ($sites as $site) {
+            if ($site->id == $site_id)
                 return $site;
         }
     }
