@@ -70,18 +70,45 @@ class DrupalMon
                 foreach ($sites as $site) {
                     $table[] = [$site->engine_version, $site->site_url, $site->update_counter, $site->security_update_counter, $site->status_message];
                 }
+                $this->cli->table($table);
                 break;
             case "detail":
                 $sites_arr = [];
                 foreach ($sites as $site) {
-                    $sites_arr[] = $site->site_url;
+                    $sites_arr[$site->id] = $site->site_url;
                 }
-                $input = $this->cli->radio('Select your site:', $sites_arr);
-                $response = $input->prompt();
+                $site_selector = $this->cli->radio('Select your site:', $sites_arr);
+                $site_id = $site_selector->prompt();
+
+                $site = $this->getSingleSite($sites, $site_id);
+
+                $padding = $this->cli->padding(50);
+                $padding->label('Site ID')->result($site->id);
+                $padding->label('Site Engine')->result($site->engine_version);
+                $padding->label('Site Patchlevel')->result($site->engine_patchlevel);
+
+                $padding->label('Site URL')->result($site->site_url);
+                $padding->label('Site IP')->result($site->site_hostname_ip);
+
+                $padding->label('Needs ENGINE update')->result(($site->need_engine_update) ? 'yes' : 'no');
+                $padding->label('Needs MODULE update')->result(($site->need_module_update) ? 'yes' : 'no');
+
+                $padding->label('Number of updates')->result($site->update_counter);
+                $padding->label('Number of security updates')->result($site->security_update_counter);
+
+                $padding->label('Outdated modules')->result($site->list_need_update_string);
+
+                $padding->label('Report date')->result($site->date_report);
                 break;
         }
 
-        $this->cli->table($table);
+    }
+
+    private function getSingleSite($sites, $site_id) {
+        foreach($sites as $site) {
+            if($site->id == $site_id)
+                return $site;
+        }
     }
 
     private function getSites()
