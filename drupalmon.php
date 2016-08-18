@@ -49,7 +49,25 @@ class DrupalMon
 
     public function run()
     {
-        $this->cli->out("Hello world");
+        $options  = ['status', 'engine', 'list'];
+        $input    = $this->cli->radio('Get the following report:', $options);
+        $response = $input->prompt();
+
+        if($response !== NULL) {
+            $this->getReport($response);
+            $this->run();
+        }
+    }
+
+    public function getReport($report) {
+        switch($report) {
+            case "status":
+                break;
+            case "engine":
+                break;
+            case "list":
+                break;
+        }
     }
 
     public function error($message)
