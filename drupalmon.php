@@ -41,9 +41,10 @@ class DrupalMon
         if(!file_exists(realpath(SETTINGS_FILE)))
             $this->error("No settings file found; Please create " . SETTINGS_FILE . " first");
 
-        $this->settings = parse_ini_file(SETTINGS_FILE, true);
+        $this->settings = parse_ini_file(SETTINGS_FILE, false);
 
-        var_dump($this->settings);
+        if(!isset($this->settings['key']))
+            $this->error("No valid API key found in " . SETTINGS_FILE);
     }
 
     public function run()
