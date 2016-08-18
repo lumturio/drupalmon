@@ -11,3 +11,23 @@ $ cd drupalmon
 $ composer install
 ```
 
+## Configure
+```
+$ touch ~/.drupalmonrc
+```
+
+Then edit using your favorite editor and add the following
+
+```
+[auth]
+token=<YOUR-API-TOKEN>
+```
+
+## Run
+```
+$ ./drupalmon
+```
+
+For more awesomeness you can add it to your $PATH 
+
+
