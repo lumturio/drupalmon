@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+define("SETTINGS_FILE", getenv("HOME") . "/.drupalmonrc");
 require_once('vendor/autoload.php');
 
 
@@ -24,20 +25,33 @@ $dm->init();
 $dm->run();
 
 
-class DrupalMon {
+class DrupalMon
+{
 
     private $cli;
+    private $settings;
 
     public function __construct()
     {
         $this->cli = new League\CLImate\CLImate;
     }
 
-    public function init() {
+    public function init()
+    {
+        if(!file_exists(realpath(SETTINGS_FILE)))
+            $this->error("No settings file found; Please create " . SETTINGS_FILE . " first");
 
+        $this->settings = parse_ini_file(SETTINGS_FILE, true);
     }
 
-    public function run() {
+    public function run()
+    {
         $this->cli->out("Hello world");
+    }
+
+    public function error($message)
+    {
+        $this->cli->red()->out($message);
+        die();
     }
 }
